@@ -20,7 +20,6 @@ public class ResultDAOImpl implements ResultDAO {
             Transaction t = session.beginTransaction();
             session.save(testServiceResult);
             t.commit();
-            session.close();
         }
     }
 }

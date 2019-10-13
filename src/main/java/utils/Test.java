@@ -6,7 +6,7 @@ import org.example.testservice.FindNumberResponse;
 
 
 public class Test {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         FindNumberRequest request = new FindNumberRequest();
         request.setN(265);
         TestServiceEndpoint endpoint = new TestServiceEndpoint();

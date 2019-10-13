@@ -14,5 +14,6 @@
         <property name="hibernate.connection.pool_size">1</property>
         <!-- Echo all executed SQL to stdout -->
         <property name="show_sql">true</property>
+        <property name="connection.release_mode">auto</property>
     </session-factory>
 </hibernate-configuration>

@@ -26,7 +26,6 @@ public class TestServiceLogic {
         Result result = new Result();
 
         File folder = new File(TestFilesGenerator.getFolder());
-//        File folder = new File("C:\\1");
         List<File> files;
 
         if (folder.list() != null && Objects.requireNonNull(folder.list()).length > 0) {
@@ -111,15 +110,14 @@ public class TestServiceLogic {
 
     private static boolean findNumberInFile(File file, int requestNumber) throws IOException {
 //        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
-//        Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length));
-//        scanner.useDelimiter(",");
-//        while (scanner.hasNextInt()) {
-//            if (requestNumber == scanner.nextInt()) {
-//                scanner.close();
-//                return true;
+//        try (Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length))) {
+//            scanner.useDelimiter(",");
+//            while (scanner.hasNextInt()) {
+//                if (requestNumber == scanner.nextInt()) {
+//                    return true;
+//                }
 //            }
 //        }
-//        scanner.close();
 //        return false;
 //---------------------------------------------------------------------------------------------------
         long length = file.length();
@@ -144,27 +142,26 @@ public class TestServiceLogic {
         return false;
 //---------------------------------------------------------------------------------------------------
 //        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
-//        ByteArrayInputStream fileReader = new ByteArrayInputStream(byteArray, 0, byteArray.length);
+//        try (ByteArrayInputStream fileReader = new ByteArrayInputStream(byteArray, 0, byteArray.length)) {
 //
-//        int i = 0;
-//        while (true) {
-//            int number;
-//            StringBuilder builder = new StringBuilder();
-//            if (i == -1) break;
+//            int i = 0;
 //            while (true) {
-//                i = fileReader.read();
-//                if (i == (int) ',' || i == -1) break;
-//                builder.append((char) i);
-//            }
+//                int number;
+//                StringBuilder builder = new StringBuilder();
+//                if (i == -1) break;
+//                while (true) {
+//                    i = fileReader.read();
+//                    if (i == (int) ',' || i == -1) break;
+//                    builder.append((char) i);
+//                }
 //
-//            number = Integer.parseInt(builder.toString());
+//                number = Integer.parseInt(builder.toString());
 //
-//            if (requestNumber == number) {
-//                fileReader.close();
-//                return true;
+//                if (requestNumber == number) {
+//                    return true;
+//                }
 //            }
 //        }
-//        fileReader.close();
 //        return false;
     }
 }

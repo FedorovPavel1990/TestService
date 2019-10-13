@@ -49,7 +49,7 @@ public class TestFilesGenerator {
                     LOG.info("Файл {} уже существует в папке {}", file.getName(), FOLDER);
                 }
             } catch (IOException e) {
-                LOG.error("Ошибка ввода/вывода: {}", e.getMessage());
+                LOG.error("Ошибка ввода/вывода", e);
             }
         }
 
@@ -57,15 +57,15 @@ public class TestFilesGenerator {
     }
 
     private static void fillFile(File file) throws IOException {
-        long startTime = new Date().getTime();
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        for (int j = 0; j < 100_000_000; j++) {
-            writer.write(new Random().nextInt() + ",");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            long startTime = new Date().getTime();
+            for (int j = 0; j < 100_000_000; j++) {
+                writer.write(new Random().nextInt() + ",");
+            }
+            writer.write(String.valueOf(new Random().nextInt()));
+            long endTime = new Date().getTime();
+            LOG.info("Файл {} заполнен данными за {} мс", file.getName(), endTime - startTime);
         }
-        writer.write(String.valueOf(new Random().nextInt()));
-        writer.close();
-        long endTime = new Date().getTime();
-        LOG.info("Файл {} заполнен данными за {} мс", file.getName(), endTime-startTime);
     }
 
     public static String getFolder() {

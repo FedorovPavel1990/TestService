@@ -21,7 +21,6 @@ public class TestServiceEndpoint {
     @PayloadRoot(namespace = NAMESPACE_URI, localPart = "findNumberRequest")
     @ResponsePayload
     public FindNumberResponse findNumber(@RequestPayload FindNumberRequest request) {
-//        LOG.info("TestServiceRequest: \n{}", request);
         FindNumberResponse response = new FindNumberResponse();
 
         try {
@@ -30,7 +29,6 @@ public class TestServiceEndpoint {
             LOG.error("Возникла техническая ошибка", e);
             TestServiceLogic.getNotSuccessResponse(response, response.getResult(), ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
         }
-//        LOG.info("TestServiceResponse: \n{}", response);
         ResultDAO resultDAO = new ResultDAOImpl();
         resultDAO.saveResult(request, response.getResult());
         return response;

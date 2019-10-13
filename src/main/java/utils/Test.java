@@ -8,7 +8,7 @@ import org.example.testservice.FindNumberResponse;
 public class Test {
     public static void main(String[] args) {
         FindNumberRequest request = new FindNumberRequest();
-        request.setN(265);
+        request.setN(1236);
         TestServiceEndpoint endpoint = new TestServiceEndpoint();
         FindNumberResponse response = endpoint.findNumber(request);
         System.out.println("code = " + response.getResult().getCode());

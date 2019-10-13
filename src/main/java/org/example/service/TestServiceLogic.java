@@ -109,17 +109,6 @@ public class TestServiceLogic {
     }
 
     private static boolean findNumberInFile(File file, int requestNumber) throws IOException {
-//        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
-//        try (Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length))) {
-//            scanner.useDelimiter(",");
-//            while (scanner.hasNextInt()) {
-//                if (requestNumber == scanner.nextInt()) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//---------------------------------------------------------------------------------------------------
         long length = file.length();
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
@@ -129,7 +118,7 @@ public class TestServiceLogic {
                 StringBuilder builder = new StringBuilder();
                 while (i < length) {
                     char ch = (char) mappedByteBuffer.get(i++);
-                    if (ch == (int) ',') {
+                    if (ch == ',') {
                         break;
                     }
                     builder.append(ch);
@@ -141,6 +130,18 @@ public class TestServiceLogic {
         }
         return false;
 //---------------------------------------------------------------------------------------------------
+//        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
+//        try (Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length))) {
+//            scanner.useDelimiter(",");
+//            while (scanner.hasNextInt()) {
+//                if (requestNumber == scanner.nextInt()) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//---------------------------------------------------------------------------------------------------
+
 //        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
 //        try (ByteArrayInputStream fileReader = new ByteArrayInputStream(byteArray, 0, byteArray.length)) {
 //

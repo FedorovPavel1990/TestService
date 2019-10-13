@@ -1,0 +1,5 @@
+tmpTestFiles
+target
+logs
+*.iml
+.idea/*

@@ -1,0 +1,34 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/TestService"
+           xmlns:ns="http://example.org/TestService"
+           elementFormDefault="qualified">
+
+    <xs:element name="findNumberRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="n" type="xs:int" minOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="findNumberResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Result" type="ns:Result"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="Result">
+        <xs:sequence>
+            <xs:element name="code" type="xs:string"/>
+            <xs:element name="fileNames" type="ns:FileNames" minOccurs="0"/>
+            <xs:element name="error" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="FileNames">
+        <xs:list itemType="xs:string"/>
+    </xs:simpleType>
+
+</xs:schema>

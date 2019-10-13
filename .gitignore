@@ -2,4 +2,4 @@ tmpTestFiles
 target
 logs
 *.iml
-.idea/*
+.idea/

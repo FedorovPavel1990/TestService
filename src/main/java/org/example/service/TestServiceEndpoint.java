@@ -29,8 +29,12 @@ public class TestServiceEndpoint {
             LOG.error("Возникла техническая ошибка", e);
             TestServiceLogic.getNotSuccessResponse(response, response.getResult(), ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
         }
-        ResultDAO resultDAO = new ResultDAOImpl();
-        resultDAO.saveResult(request, response.getResult());
+        try {
+            ResultDAO resultDAO = new ResultDAOImpl();
+            resultDAO.saveResult(request, response.getResult());
+        } catch (Exception e) {
+            LOG.error("Ошибка записи в БД", e);
+        }
         return response;
     }
 }

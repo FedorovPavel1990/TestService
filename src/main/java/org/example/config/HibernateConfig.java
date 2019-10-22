@@ -24,15 +24,14 @@ public class HibernateConfig {
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(restDataSource());
+        sessionFactory.setDataSource(dataSource());
         sessionFactory.setPackagesToScan("org.example.entity");
         sessionFactory.setHibernateProperties(hibernateProperties());
-
         return sessionFactory;
     }
 
     @Bean
-    public DataSource restDataSource() {
+    public DataSource dataSource() {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName(env.getProperty("hibernate.connection.driver_class"));
         dataSource.setUrl(env.getProperty("hibernate.connection.url"));
@@ -44,10 +43,8 @@ public class HibernateConfig {
     @Bean
     @Autowired
     public HibernateTransactionManager transactionManager(SessionFactory sessionFactory) {
-
         HibernateTransactionManager txManager = new HibernateTransactionManager();
         txManager.setSessionFactory(sessionFactory);
-
         return txManager;
     }
 
@@ -56,11 +53,10 @@ public class HibernateConfig {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
-    Properties hibernateProperties() {
+    private Properties hibernateProperties() {
         return new Properties() {
             {
-                setProperty("hibernate.dialect",
-                        env.getProperty("hibernate.dialect"));
+                setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
             }
         };
     }

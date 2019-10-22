@@ -14,10 +14,6 @@ public class ResultDAOImpl implements ResultDAO {
     @Autowired
     private SessionFactory sessionFactory;
 
-    public ResultDAOImpl(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
-
     @Override
     @Transactional
     public void saveResult(FindNumberRequest request, Result result) {

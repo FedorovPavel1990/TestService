@@ -3,23 +3,29 @@ package org.example.dao;
 import org.example.entity.TestServiceResult;
 import org.example.testservice.FindNumberRequest;
 import org.example.testservice.Result;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import utils.HibernateSessionFactoryUtil;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+@Repository
 public class ResultDAOImpl implements ResultDAO {
 
+    @Autowired
+    private SessionFactory sessionFactory;
+
+    public ResultDAOImpl(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
     @Override
+    @Transactional
     public void saveResult(FindNumberRequest request, Result result) {
         TestServiceResult testServiceResult = new TestServiceResult(result.getCode(),
                 request.getN(),
                 result.getFileNames().toString(),
                 result.getError());
 
-        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()) {
-            Transaction t = session.beginTransaction();
-            session.save(testServiceResult);
-            t.commit();
-        }
+        sessionFactory.getCurrentSession().save(testServiceResult);
     }
 }

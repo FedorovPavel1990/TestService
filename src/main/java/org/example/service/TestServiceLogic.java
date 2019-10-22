@@ -2,37 +2,50 @@ package org.example.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.example.dao.ResultDAO;
 import org.example.enums.ResultCodes;
 import org.example.testservice.FindNumberRequest;
 import org.example.testservice.FindNumberResponse;
 import org.example.testservice.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import utils.TestFilesGenerator;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 
+@Service
 public class TestServiceLogic {
     private static final Logger LOG = LogManager.getLogger(TestServiceLogic.class);
 
-    static FindNumberResponse findNumber(FindNumberRequest request) throws InterruptedException {
+    @Autowired
+    private ResultDAO resultDAO;
+
+    FindNumberResponse findNumber(FindNumberRequest request) throws InterruptedException {
 
         int requestNumber = request.getN();
         FindNumberResponse response = new FindNumberResponse();
         Result result = new Result();
 
         File folder = new File(TestFilesGenerator.getFolder());
+//        File folder = new File("C:/2");
         List<File> files;
 
         if (folder.list() != null && Objects.requireNonNull(folder.list()).length > 0) {
             files = Arrays.asList(Objects.requireNonNull(folder.listFiles()));
         } else {
             LOG.error("Папка {} пуста", folder.getName());
-            return getNotSuccessResponse(response, result, ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
+            fillResponseNotSuccessResult(response, result, ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
+            addResultInDB(request, response);
+            return response;
         }
 
         List<String> filesWithN = new ArrayList<>();
@@ -48,7 +61,7 @@ public class TestServiceLogic {
                     isNumberFoundInFile = findNumberInFile(file, requestNumber);
                 } catch (Exception e) {
                     LOG.error("Возникла техническая ошибка", e);
-                    getNotSuccessResponse(response, result, ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
+                    fillResponseNotSuccessResult(response, result, ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
                     LOG.debug("\n------------------------\nTASK FOR {} ENDED WITH FAIL\n------------------------\n {}", file.getName(), e.getMessage());
                     return Boolean.FALSE;
                 }
@@ -64,29 +77,40 @@ public class TestServiceLogic {
         List<Future<Boolean>> futures = executor.invokeAll(tasks);
         executor.shutdown();
 
-        //task возвращает true, если отработал успешно и false если была ошибка при выполнении, здесь смотрим была ли
-        // ошиибка по какому-нибудь task
+        //task возвращает true, если отработал успешно и false если была ошибка при выполнении, здесь смотрим была ли ошибка по какому-нибудь task
         boolean isError = false;
         for (Future future : futures) {
             try {
                 isError = !(boolean) future.get();
             } catch (InterruptedException | ExecutionException e) {
                 LOG.error("Возникла техническая ошибка", e);
-                return getNotSuccessResponse(response, result, ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
+                fillResponseNotSuccessResult(response, result, ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
+                addResultInDB(request, response);
+                return response;
             }
         }
 
         if (isError) {
-            return getNotSuccessResponse(response, result, ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
+            fillResponseNotSuccessResult(response, result, ResultCodes.FindNumber_02.getCode(), ResultCodes.FindNumber_02.getError());
+            addResultInDB(request, response);
+            return response;
         }
         if (filesWithN.isEmpty()) {
-            return getNotSuccessResponse(response, result, ResultCodes.FindNumber_01.getCode(), ResultCodes.FindNumber_01.getError());
+            fillResponseNotSuccessResult(response, result, ResultCodes.FindNumber_01.getCode(), ResultCodes.FindNumber_01.getError());
+            addResultInDB(request, response);
+            return response;
         } else {
-            return getSuccessResponse(response, result, ResultCodes.FindNumber_00.getCode(), filesWithN);
+            fillResponseSuccessResult(response, result, ResultCodes.FindNumber_00.getCode(), filesWithN);
+            addResultInDB(request, response);
+            return response;
         }
     }
 
-    static FindNumberResponse getNotSuccessResponse(FindNumberResponse response, Result result, String code, String error) {
+    private void addResultInDB(FindNumberRequest request, FindNumberResponse response) {
+        resultDAO.saveResult(request, response.getResult());
+    }
+
+    private void fillResponseNotSuccessResult(FindNumberResponse response, Result result, String code, String error) {
         if (code != null && !code.isEmpty()) {
             result.setCode(code);
         }
@@ -94,10 +118,9 @@ public class TestServiceLogic {
             result.setError(error);
         }
         response.setResult(result);
-        return response;
     }
 
-    static FindNumberResponse getSuccessResponse(FindNumberResponse response, Result result, String code, List<String> fileNames) {
+    private void fillResponseSuccessResult(FindNumberResponse response, Result result, String code, List<String> fileNames) {
         if (code != null && !code.isEmpty()) {
             result.setCode(code);
         }
@@ -105,10 +128,9 @@ public class TestServiceLogic {
             result.getFileNames().addAll(fileNames);
         }
         response.setResult(result);
-        return response;
     }
 
-    private static boolean findNumberInFile(File file, int requestNumber) throws IOException {
+    private boolean findNumberInFile(File file, int requestNumber) throws IOException {
         long length = file.length();
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);

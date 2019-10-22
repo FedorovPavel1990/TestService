@@ -15,7 +15,7 @@
     </repositories>
     <properties>
         <java.version>1.8</java.version>
-        <start-class>org.example.service.TestServiceApplication</start-class>
+        <start-class>org.example.TestServiceApplication</start-class>
     </properties>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -49,6 +49,11 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
+            <version>2.7.0</version>
+        </dependency>
         <dependency>
             <groupId>com.local-ojdbc8</groupId>
             <artifactId>ojdbc8-library-local</artifactId>

@@ -9,6 +9,10 @@ import java.util.Date;
 
 public class Test {
     public static void main(String[] args) {
+        testServiceTest();
+    }
+
+    private static void testServiceTest() {
         FindNumberRequest request = new FindNumberRequest();
         request.setN(2365);
         TestServiceEndpoint endpoint = new TestServiceEndpoint();

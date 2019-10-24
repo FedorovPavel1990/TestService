@@ -8,7 +8,9 @@ import org.example.testservice.FindNumberRequest;
 import org.example.testservice.FindNumberResponse;
 import org.example.testservice.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,26 +30,32 @@ public class TestServiceLogic {
     @Autowired
     private ResultDAO resultDAO;
 
-    FindNumberResponse findNumber(FindNumberRequest request) {
+    @Value("${testservice.folder}")
+    private String folder;
+
+    @Value("${testservice.executors_count}")
+    private String executorsCount;
+
+    public FindNumberResponse findNumber(FindNumberRequest request) {
 
         int requestNumber = request.getN();
 
-//        File folder = new File(TestFilesGenerator.getFolder());
-        File folder = new File("C:/2");
+        File folder = new File(this.folder);
         List<File> files;
 
         if (folder.list() != null && Objects.requireNonNull(folder.list()).length > 0) {
             files = Arrays.asList(Objects.requireNonNull(folder.listFiles()));
         } else {
             LOG.error("Папка {} пуста", folder.getName());
-            return getResponseAndPushInDB(request, getResultWithError());
+            return getResponse(getResultWithError());
         }
 
         List<String> filesWithN = new ArrayList<>();
-
         List<Callable<Boolean>> tasks = new ArrayList<>();
         List<Future<Boolean>> futures;
-        ExecutorService executor = Executors.newFixedThreadPool(10);
+
+        int executorsCount = Integer.parseInt(this.executorsCount);
+        ExecutorService executor = Executors.newFixedThreadPool(executorsCount);
 
         try {
             for (File file : files) {
@@ -72,7 +80,7 @@ public class TestServiceLogic {
             futures = executor.invokeAll(tasks);
         } catch (Exception e) {
             LOG.error("Возникла техническая ошибка", e);
-            return getResponseAndPushInDB(request, getResultWithError());
+            return getResponse(getResultWithError());
         } finally {
             executor.shutdown();
         }
@@ -84,23 +92,27 @@ public class TestServiceLogic {
                 isError = !(boolean) future.get();
             } catch (InterruptedException | ExecutionException e) {
                 LOG.error("Возникла техническая ошибка", e);
-                return getResponseAndPushInDB(request, getResultWithError());
+                return getResponse(getResultWithError());
             }
         }
 
         if (isError) {
-            return getResponseAndPushInDB(request, getResultWithError());
+            return getResponse(getResultWithError());
         } else if (filesWithN.isEmpty()) {
-            return getResponseAndPushInDB(request, getResultWithNumberNotFound());
+            return getResponse(getResultWithNumberNotFound());
         } else {
-            return getResponseAndPushInDB(request, getResultWithOk(filesWithN));
+            return getResponse(getResultWithOk(filesWithN));
         }
     }
 
-    private FindNumberResponse getResponseAndPushInDB(FindNumberRequest request, Result result) {
+    @Transactional
+    public void addResultInDB(FindNumberRequest request, FindNumberResponse response) {
+        resultDAO.saveResult(request, response.getResult());
+    }
+
+    private FindNumberResponse getResponse(Result result) {
         FindNumberResponse response = new FindNumberResponse();
         response.setResult(result);
-        addResultInDB(request, response);
         return response;
     }
 
@@ -125,11 +137,28 @@ public class TestServiceLogic {
         return result;
     }
 
-    private void addResultInDB(FindNumberRequest request, FindNumberResponse response) {
-        resultDAO.saveResult(request, response.getResult());
-    }
-
     private boolean findNumberInFile(File file, int requestNumber) throws IOException {
+//        long length = file.length();
+//        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
+//            MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
+////            int i = 0;
+//
+//            while (mappedByteBuffer.hasRemaining()) {
+//                StringBuilder builder = new StringBuilder();
+//                while (true) {
+//                    char ch = mappedByteBuffer.getChar();
+//                    if (ch == ',') {
+//                        break;
+//                    }
+//                    builder.append(ch);
+//                }
+//                if (requestNumber == Integer.parseInt(builder.toString())) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//---------------------------------------------------------------------------------------------------
         long length = file.length();
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
@@ -162,7 +191,6 @@ public class TestServiceLogic {
 //        }
 //        return false;
 //---------------------------------------------------------------------------------------------------
-
 //        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
 //        try (ByteArrayInputStream fileReader = new ByteArrayInputStream(byteArray, 0, byteArray.length)) {
 //

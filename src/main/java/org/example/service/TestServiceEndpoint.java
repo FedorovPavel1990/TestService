@@ -19,6 +19,8 @@ public class TestServiceEndpoint {
     @PayloadRoot(namespace = NAMESPACE_URI, localPart = "findNumberRequest")
     @ResponsePayload
     public FindNumberResponse findNumber(@RequestPayload FindNumberRequest request) {
-        return testServiceLogic.findNumber(request);
+        FindNumberResponse response = testServiceLogic.findNumber(request);
+        testServiceLogic.addResultInDB(request, response);
+        return response;
     }
 }

@@ -141,12 +141,11 @@ public class TestServiceLogic {
 //        long length = file.length();
 //        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
 //            MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
-////            int i = 0;
 //
 //            while (mappedByteBuffer.hasRemaining()) {
 //                StringBuilder builder = new StringBuilder();
 //                while (true) {
-//                    char ch = mappedByteBuffer.getChar();
+//                    char ch = (char) mappedByteBuffer.get();
 //                    if (ch == ',') {
 //                        break;
 //                    }
@@ -162,12 +161,11 @@ public class TestServiceLogic {
         long length = file.length();
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
-            int i = 0;
 
-            while (i < length) {
+            while (mappedByteBuffer.hasRemaining()) {
                 StringBuilder builder = new StringBuilder();
-                while (i < length) {
-                    char ch = (char) mappedByteBuffer.get(i++);
+                while (mappedByteBuffer.hasRemaining()) {
+                    char ch = (char) mappedByteBuffer.get();
                     if (ch == ',') {
                         break;
                     }

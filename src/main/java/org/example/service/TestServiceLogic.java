@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -138,45 +139,29 @@ public class TestServiceLogic {
     }
 
     private boolean findNumberInFile(File file, int requestNumber) throws IOException {
-//        long length = file.length();
-//        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
-//            MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
-//
-//            while (mappedByteBuffer.hasRemaining()) {
-//                StringBuilder builder = new StringBuilder();
-//                while (true) {
-//                    char ch = (char) mappedByteBuffer.get();
-//                    if (ch == ',') {
-//                        break;
-//                    }
-//                    builder.append(ch);
-//                }
-//                if (requestNumber == Integer.parseInt(builder.toString())) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//---------------------------------------------------------------------------------------------------
         long length = file.length();
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
+            MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
 
             while (mappedByteBuffer.hasRemaining()) {
-                StringBuilder builder = new StringBuilder();
-                while (mappedByteBuffer.hasRemaining()) {
-                    char ch = (char) mappedByteBuffer.get();
-                    if (ch == ',') {
-                        break;
-                    }
-                    builder.append(ch);
-                }
-                if (requestNumber == Integer.parseInt(builder.toString())) {
+                if (requestNumber == getNextIntFromMBF(mappedByteBuffer, ',')) {
                     return true;
                 }
             }
         }
         return false;
+//---------------------------------------------------------------------------------------------------
+//        long length = file.length();
+//        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+//            MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
+//
+//            while (mappedByteBuffer.hasRemaining()) {
+//                if (requestNumber == getNextIntFromMBF(mappedByteBuffer, ',')) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
 //---------------------------------------------------------------------------------------------------
 //        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
 //        try (Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length))) {
@@ -211,5 +196,17 @@ public class TestServiceLogic {
 //            }
 //        }
 //        return false;
+    }
+
+    private int getNextIntFromMBF(MappedByteBuffer mbf, char delimiter) {
+        StringBuilder builder = new StringBuilder();
+        while (mbf.hasRemaining()) {
+            char ch = (char) mbf.get();
+            if (ch == delimiter) {
+                break;
+            }
+            builder.append(ch);
+        }
+        return Integer.parseInt(builder.toString());
     }
 }

@@ -16,11 +16,14 @@ public class TestServiceEndpoint {
     @Autowired
     private TestServiceLogic testServiceLogic;
 
+    @Autowired
+    private DatabaseService databaseService;
+
     @PayloadRoot(namespace = NAMESPACE_URI, localPart = "findNumberRequest")
     @ResponsePayload
     public FindNumberResponse findNumber(@RequestPayload FindNumberRequest request) {
         FindNumberResponse response = testServiceLogic.findNumber(request);
-        testServiceLogic.addResultInDB(request, response);
+        databaseService.addResultInDB(request, response);
         return response;
     }
 }

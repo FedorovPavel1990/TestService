@@ -2,13 +2,14 @@ package org.example.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
@@ -18,11 +19,14 @@ import java.util.concurrent.Future;
 public class AsyncService {
     private static final Logger LOG = LogManager.getLogger(TestServiceLogic.class);
 
+    @Value("${testservice.count_chunks}")
+    private int countChunks;
+
     @Async
     public Future<Boolean> asyncFindNumberInFile(File file, int requestNumber, List<String> resultFileList) {
         LOG.debug("TASK FOR {} STARTED", file.getName());
         try {
-            if (asyncFindNumberInFile(file, requestNumber)) {
+            if (findNumberInFile(file, requestNumber)) {
                 resultFileList.add(file.getName());
             }
         } catch (Exception e) {
@@ -33,68 +37,37 @@ public class AsyncService {
         return new AsyncResult<>(true);
     }
 
-    private boolean asyncFindNumberInFile(File file, int requestNumber) throws IOException {
+    private boolean findNumberInFile(File file, int requestNumber) throws IOException {
         long length = file.length();
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
-            MappedByteBuffer mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
+        long chunk = length / countChunks;
+        long chunkPosition = 0;
 
-            while (mappedByteBuffer.hasRemaining()) {
-                if (requestNumber == getNextIntFromMBF(mappedByteBuffer, ',')) {
-                    return true;
+        for (int i = 0; i < countChunks; i++) {
+
+            chunk = chunkPosition + chunk >= length
+                    ? length - chunkPosition
+                    : chunk + getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+
+            try (FileInputStream fileInputStream = new FileInputStream(file)) {
+                MappedByteBuffer mappedByteBuffer = fileInputStream
+                        .getChannel()
+                        .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
+                while (mappedByteBuffer.hasRemaining()) {
+                    if (requestNumber == getNextIntFromMBF(mappedByteBuffer, ',')) {
+                        return true;
+                    }
                 }
             }
+
+            chunkPosition += chunk;
         }
+
         return false;
-//---------------------------------------------------------------------------------------------------
-//        long length = file.length();
-//        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-//            MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, length);
-//
-//            while (mappedByteBuffer.hasRemaining()) {
-//                if (requestNumber == getNextIntFromMBF(mappedByteBuffer, ',')) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//---------------------------------------------------------------------------------------------------
-//        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
-//        try (Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length))) {
-//            scanner.useDelimiter(",");
-//            while (scanner.hasNextInt()) {
-//                if (requestNumber == scanner.nextInt()) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//---------------------------------------------------------------------------------------------------
-//        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
-//        try (ByteArrayInputStream fileReader = new ByteArrayInputStream(byteArray, 0, byteArray.length)) {
-//
-//            int i = 0;
-//            while (true) {
-//                int number;
-//                StringBuilder builder = new StringBuilder();
-//                if (i == -1) break;
-//                while (true) {
-//                    i = fileReader.read();
-//                    if (i == (int) ',' || i == -1) break;
-//                    builder.append((char) i);
-//                }
-//
-//                number = Integer.parseInt(builder.toString());
-//
-//                if (requestNumber == number) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
     }
 
     private int getNextIntFromMBF(MappedByteBuffer mbf, char delimiter) {
         StringBuilder builder = new StringBuilder();
+
         while (mbf.hasRemaining()) {
             char ch = (char) mbf.get();
             if (ch == delimiter) {
@@ -102,6 +75,24 @@ public class AsyncService {
             }
             builder.append(ch);
         }
+
         return Integer.parseInt(builder.toString());
+    }
+
+    private static long getNextDelimiterPosition(File file, long position, char delimiter) throws IOException {
+        long nextDelimiterPosition = 0;
+
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, position, 12);
+            while (mappedByteBuffer.hasRemaining()) {
+                char ch = (char) mappedByteBuffer.get();
+                if (ch == delimiter) {
+                    nextDelimiterPosition = mappedByteBuffer.position();
+                    break;
+                }
+            }
+        }
+
+        return nextDelimiterPosition;
     }
 }

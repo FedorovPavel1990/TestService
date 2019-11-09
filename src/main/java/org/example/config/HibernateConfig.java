@@ -3,9 +3,9 @@ package org.example.config;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -18,8 +18,20 @@ import java.util.Properties;
 @EnableTransactionManagement
 public class HibernateConfig {
 
-    @Autowired
-    private Environment env;
+    @Value("${hibernate.connection.driver_class}")
+    private String dbDriverClass;
+
+    @Value("${hibernate.connection.url}")
+    private String dbConnectionUrl;
+
+    @Value("${hibernate.connection.username}")
+    private String dbUsername;
+
+    @Value("${hibernate.connection.password}")
+    private String dbPassword;
+
+    @Value("${hibernate.dialect}")
+    private String dbDialect;
 
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
@@ -33,10 +45,10 @@ public class HibernateConfig {
     @Bean
     public DataSource dataSource() {
         BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(env.getProperty("hibernate.connection.driver_class"));
-        dataSource.setUrl(env.getProperty("hibernate.connection.url"));
-        dataSource.setUsername(env.getProperty("hibernate.connection.username"));
-        dataSource.setPassword(env.getProperty("hibernate.connection.password"));
+        dataSource.setDriverClassName(dbDriverClass);
+        dataSource.setUrl(dbConnectionUrl);
+        dataSource.setUsername(dbUsername);
+        dataSource.setPassword(dbPassword);
         return dataSource;
     }
 
@@ -56,7 +68,7 @@ public class HibernateConfig {
     private Properties hibernateProperties() {
         return new Properties() {
             {
-                setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
+                setProperty("hibernate.dialect", dbDialect);
             }
         };
     }

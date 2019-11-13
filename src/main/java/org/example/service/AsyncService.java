@@ -12,6 +12,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -52,17 +54,47 @@ public class AsyncService {
                 MappedByteBuffer mappedByteBuffer = fileInputStream
                         .getChannel()
                         .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
-                while (mappedByteBuffer.hasRemaining()) {
-                    if (requestNumber == getNextIntFromMBF(mappedByteBuffer, ',')) {
-                        return true;
-                    }
+
+                String string = StandardCharsets.UTF_8.decode(mappedByteBuffer).toString();
+                List<String> ints = Arrays.asList(string.split(","));
+
+                boolean isNumberFound = ints.parallelStream().anyMatch(n -> n.equals(String.valueOf(requestNumber)));
+                if (isNumberFound) {
+                    return true;
                 }
+
             }
 
             chunkPosition += chunk;
         }
 
         return false;
+
+//        long length = file.length();
+//        long chunk = length / countChunks;
+//        long chunkPosition = 0;
+//
+//        for (int i = 0; i < countChunks; i++) {
+//
+//            chunk = chunkPosition + chunk >= length
+//                    ? length - chunkPosition
+//                    : chunk + getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+//
+//            try (RandomAccessFile fileInputStream = new RandomAccessFile(file, "r")) {
+//                MappedByteBuffer mappedByteBuffer = fileInputStream
+//                        .getChannel()
+//                        .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
+//                while (mappedByteBuffer.hasRemaining()) {
+//                    if (requestNumber == getNextIntFromMBF(mappedByteBuffer, ',')) {
+//                        return true;
+//                    }
+//                }
+//            }
+//
+//            chunkPosition += chunk;
+//        }
+//
+//        return false;
     }
 
     private int getNextIntFromMBF(MappedByteBuffer mbf, char delimiter) {
@@ -95,4 +127,5 @@ public class AsyncService {
 
         return nextDelimiterPosition;
     }
+
 }

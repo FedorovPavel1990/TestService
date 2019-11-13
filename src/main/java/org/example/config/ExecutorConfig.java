@@ -20,7 +20,6 @@ public class ExecutorConfig {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(executorsCount);
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setQueueCapacity(20);
         executor.setThreadNamePrefix("threadPoolTaskExecutor");
         executor.initialize();
         return executor;

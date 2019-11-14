@@ -1,19 +1,20 @@
 package utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
 
 
 public class Test {
-    private static final int COUNT_CHUNKS = 300;
+    private static final int COUNT_CHUNKS = 2;
 
     public static void main(String[] args) throws IOException {
         Test test = new Test();
@@ -32,10 +33,10 @@ public class Test {
     }
 
     private void testServiceTest() throws IOException {
-        int n = -1030360796; //1568642635, -2030360796
+        int n = -968120087; //1568642635, -2030360796
         File file = new File(
-//                "tmpTestFiles/testFile1"
-                "C:/1/testFile1"
+                "tmpTestFiles/testFile1"
+//                "C:/1/testFile1"
         );
         long startTime = new Date().getTime();
         boolean result = findNumberInFile(file, n);
@@ -46,37 +47,52 @@ public class Test {
     }
 
     private boolean findNumberInFile(File file, int requestNumber) throws IOException {
-        long length = file.length();
-        long chunk = length / COUNT_CHUNKS;
-        long chunkPosition = 0;
-
-        for (int i = 0; i < COUNT_CHUNKS; i++) {
-
-            chunk = chunkPosition + chunk >= length
-                    ? length - chunkPosition
-                    : chunk + getNextDelimiterPosition(file, chunkPosition + chunk, ',');
-
-            try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                MappedByteBuffer mappedByteBuffer = fileInputStream
-                        .getChannel()
-                        .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
-
-//                byte[] bytes = new byte[mappedByteBuffer.remaining()];
-//                mappedByteBuffer.get(bytes);
-                String string = StandardCharsets.UTF_8.decode(mappedByteBuffer).toString();
-                List<String> ints = Arrays.asList(string.split(","));
-
-                boolean isNumberFound = ints.parallelStream().anyMatch(n -> n.equals(String.valueOf(requestNumber)));
-                if (isNumberFound) {
-                    return true;
-                }
-
-            }
-
-            chunkPosition += chunk;
+        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
+        boolean result;
+        try (Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length))) {
+            scanner.useDelimiter(",");
+            IntStream intStream = IntStream.generate(scanner::nextInt).limit(Integer.MAX_VALUE);
+            result = intStream.anyMatch(n -> n == requestNumber);
         }
-
-        return false;
+        return result;
+//---------------------------------------------------------------------------------------------------
+//        long length = file.length();
+//        long chunk = length / COUNT_CHUNKS;
+//        long chunkPosition = 0;
+//
+//        for (int i = 0; i < COUNT_CHUNKS; i++) {
+//
+//            chunk = chunkPosition + chunk >= length
+//                    ? length - chunkPosition
+//                    : chunk + getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+//
+//            try (FileInputStream fileInputStream = new FileInputStream(file)) {
+//                MappedByteBuffer mappedByteBuffer = fileInputStream
+//                        .getChannel()
+//                        .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
+//
+//
+//                IntStream intStream = IntStream.generate(mappedByteBuffer::getInt).limit(20); //mappedByteBuffer.remaining()
+////                StringBuilder builder = new StringBuilder();
+////                intStream.forEach(ch -> builder.append((char) ch));
+////                String string = builder.toString();
+////                List<String> ints = Arrays.asList(string.split(","));
+//
+//                intStream.forEach(System.out::print);
+////                intStream.forEach(ch -> System.out.print((char) ch));
+//                System.out.println();
+//
+////                boolean isNumberFound = intStream.parallel().anyMatch(n -> n == requestNumber);
+////                if (isNumberFound) {
+////                    return true;
+////                }
+//
+//            }
+//
+//            chunkPosition += chunk;
+//        }
+//
+//        return false;
 //---------------------------------------------------------------------------------------------------
 //        long length = file.length();
 //        long chunk = length / COUNT_CHUNKS;

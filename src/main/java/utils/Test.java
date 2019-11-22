@@ -1,5 +1,7 @@
 package utils;
 
+import org.apache.logging.log4j.core.util.JsonUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,7 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 
 public class Test {
@@ -23,17 +27,25 @@ public class Test {
     }
 
     private void test() {
+        long startTimeAdding = new Date().getTime();
         List<Integer> ints = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10_000_000; i++) {
             ints.add(i);
         }
+        long endTimeAdding = new Date().getTime();
 
-        boolean isNumberFound = ints.stream().anyMatch(n -> n == 1);
+        long startTimeFinding = new Date().getTime();
+        Stream<Integer> stream = ints.parallelStream().filter(n -> n == 100_000_001).limit(1);
+        boolean isNumberFound = stream.count() > 0;
+        long endTimeAFinding = new Date().getTime();
+
         System.out.println(isNumberFound);
+        System.out.println("Adding: " + (endTimeAdding - startTimeAdding));
+        System.out.println("Finding: " + (endTimeAFinding - startTimeFinding));
     }
 
     private void testServiceTest() throws IOException {
-        int n = -968120087; //1568642635, -2030360796
+        int n = 1405085176; //1568642635, -2030360796
         File file = new File(
                 "tmpTestFiles/testFile1"
 //                "C:/1/testFile1"
@@ -47,12 +59,18 @@ public class Test {
     }
 
     private boolean findNumberInFile(File file, int requestNumber) throws IOException {
-        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
+//        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
         boolean result;
-        try (Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length))) {
+        try (Scanner scanner = new Scanner(new FileInputStream(file))) {
             scanner.useDelimiter(",");
-            IntStream intStream = IntStream.generate(scanner::nextInt).limit(Integer.MAX_VALUE);
-            result = intStream.anyMatch(n -> n == requestNumber);
+            IntStream intStream = IntStream.generate(scanner::nextInt);
+            try {
+//            intStream = intStream.filter(n -> n == requestNumber).limit(1);
+//            result = intStream.count() > 0;
+                result = intStream.parallel().anyMatch(n -> n == requestNumber);
+            } catch (NoSuchElementException e) {
+                result = false;
+            }
         }
         return result;
 //---------------------------------------------------------------------------------------------------

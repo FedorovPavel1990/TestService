@@ -14,7 +14,6 @@ public class ExecutorConfig {
     @Value("${testservice.executors_count}")
     private int executorsCount;
 
-
     @Bean
     public TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

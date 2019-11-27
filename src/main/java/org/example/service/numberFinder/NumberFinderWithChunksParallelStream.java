@@ -35,8 +35,6 @@ public class NumberFinderWithChunksParallelStream implements NumberFinder {
                         .getChannel()
                         .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
 
-
-
                 String string = StandardCharsets.UTF_8.decode(mappedByteBuffer).toString();
                 List<String> ints = Arrays.asList(string.split(","));
 

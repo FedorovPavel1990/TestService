@@ -3,15 +3,18 @@ package utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
 public class Test {
-    private static final int COUNT_CHUNKS = 2;
+    private static final int COUNT_CHUNKS = 1000000;
 
     public static void main(String[] args) throws IOException {
         Test test = new Test();
@@ -38,10 +41,10 @@ public class Test {
     }
 
     private void testServiceTest() throws IOException {
-        int n = 1405085176; //1568642635, -2030360796
+        int n = -2030360796; //1568642635, -2030360796
         File file = new File(
-                "tmpTestFiles/testFile1"
-//                "C:/1/testFile1"
+//                "tmpTestFiles/testFile1"
+                "C:/1/testFile1"
         );
         long startTime = new Date().getTime();
         boolean result = findNumberInFile(file, n);
@@ -52,20 +55,57 @@ public class Test {
     }
 
     private boolean findNumberInFile(File file, int requestNumber) throws IOException {
-//        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
-        boolean result;
-        try (Scanner scanner = new Scanner(new FileInputStream(file))) {
-            scanner.useDelimiter(",");
-            IntStream intStream = IntStream.generate(scanner::nextInt);
-            try {
-//            intStream = intStream.filter(n -> n == requestNumber).limit(1);
-//            result = intStream.count() > 0;
-                result = intStream.parallel().anyMatch(n -> n == requestNumber);
-            } catch (NoSuchElementException e) {
-                result = false;
+        boolean result = false;
+
+        long length = file.length();
+        long chunk = length / COUNT_CHUNKS;
+        long chunkPosition = 0;
+
+        for (int i = 0; i < COUNT_CHUNKS; i++) {
+
+//            long nextDelimiterPosition = getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+
+            chunk = chunkPosition + chunk >= length
+                    ? length - chunkPosition
+                    : chunk + getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+
+            try (RandomAccessFile fileInputStream = new RandomAccessFile(file, "r")) {
+
+                MappedByteBuffer mappedByteBuffer = fileInputStream
+                        .getChannel()
+                        .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
+
+                int numbersCount = getNumbersCountFromMBF(mappedByteBuffer, ',');
+                try {
+                    result = IntStream.generate(() -> getNextIntFromMBF(mappedByteBuffer, ','))
+                            .limit(numbersCount)
+                            .anyMatch(n -> n == requestNumber);
+                } catch (Exception e) {
+                    System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
+                    System.out.println(i);
+                    System.out.println(mappedByteBuffer.hasRemaining());
+                }
+                if (result) {
+                    break;
+                }
             }
+
+            chunkPosition += chunk;
         }
+
         return result;
+//---------------------------------------------------------------------------------------------------
+//        boolean result;
+//        try (Scanner scanner = new Scanner(new FileInputStream(file))) {
+//            scanner.useDelimiter(",");
+//            IntStream intStream = IntStream.generate(scanner::nextInt);
+//            try {
+//                result = intStream.anyMatch(n -> n == requestNumber);
+//            } catch (NoSuchElementException e) {
+//                result = false;
+//            }
+//        }
+//        return result;
 //---------------------------------------------------------------------------------------------------
 //        long length = file.length();
 //        long chunk = length / COUNT_CHUNKS;
@@ -178,7 +218,7 @@ public class Test {
 //        return false;
     }
 
-    private int getNextIntFromMBF(MappedByteBuffer mbf, char delimiter) {
+    private int getNextIntFromMBF(MappedByteBuffer mbf, char delimiter) throws NumberFormatException {
         StringBuilder builder = new StringBuilder();
         while (mbf.hasRemaining()) {
             char ch = (char) mbf.get();
@@ -205,5 +245,17 @@ public class Test {
         }
         return nextDelimiterPosition;
     }
+
+    private int getNumbersCountFromMBF(MappedByteBuffer mbf, char delimiter) {
+        int count = 0;
+        while (mbf.hasRemaining()) {
+            char ch = (char) mbf.get();
+            if (ch == delimiter) {
+                count++;
+            }
+        }
+        return count + 1;
+    }
+
 
 }

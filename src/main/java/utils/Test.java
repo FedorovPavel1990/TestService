@@ -1,7 +1,8 @@
 package utils;
 
+import org.example.service.numberFinder.NumberFinderUtil;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
@@ -9,12 +10,12 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 
 public class Test {
-    private static final int COUNT_CHUNKS = 1000000;
+    private static final int COUNT_CHUNKS = 5;
 
     public static void main(String[] args) throws IOException {
         Test test = new Test();
@@ -41,7 +42,7 @@ public class Test {
     }
 
     private void testServiceTest() throws IOException {
-        int n = -2030360796; //1568642635, -2030360796
+        int n = -2030360791; //1568642635, -2030360796
         File file = new File(
 //                "tmpTestFiles/testFile1"
                 "C:/1/testFile1"
@@ -55,6 +56,8 @@ public class Test {
     }
 
     private boolean findNumberInFile(File file, int requestNumber) throws IOException {
+
+
         boolean result = false;
 
         long length = file.length();
@@ -63,11 +66,9 @@ public class Test {
 
         for (int i = 0; i < COUNT_CHUNKS; i++) {
 
-//            long nextDelimiterPosition = getNextDelimiterPosition(file, chunkPosition + chunk, ',');
-
             chunk = chunkPosition + chunk >= length
                     ? length - chunkPosition
-                    : chunk + getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+                    : chunk + NumberFinderUtil.getNextDelimiterPosition(file, chunkPosition + chunk, ',');
 
             try (RandomAccessFile fileInputStream = new RandomAccessFile(file, "r")) {
 
@@ -75,16 +76,11 @@ public class Test {
                         .getChannel()
                         .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
 
-                int numbersCount = getNumbersCountFromMBF(mappedByteBuffer, ',');
-                try {
-                    result = IntStream.generate(() -> getNextIntFromMBF(mappedByteBuffer, ','))
-                            .limit(numbersCount)
-                            .anyMatch(n -> n == requestNumber);
-                } catch (Exception e) {
-                    System.out.println(e.getClass().getSimpleName() + ": " + e.getMessage());
-                    System.out.println(i);
-                    System.out.println(mappedByteBuffer.hasRemaining());
-                }
+                result = Stream.generate(() -> NumberFinderUtil.getNextIntFromMBFSync(mappedByteBuffer, ','))
+                        .takeWhile(Objects::nonNull)
+//                        .parallel()
+                        .anyMatch(n -> requestNumber == n);
+
                 if (result) {
                     break;
                 }
@@ -115,28 +111,20 @@ public class Test {
 //
 //            chunk = chunkPosition + chunk >= length
 //                    ? length - chunkPosition
-//                    : chunk + getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+//                    : chunk + NumberFinderUtil.getNextDelimiterPosition(file, chunkPosition + chunk, ',');
 //
 //            try (FileInputStream fileInputStream = new FileInputStream(file)) {
 //                MappedByteBuffer mappedByteBuffer = fileInputStream
 //                        .getChannel()
 //                        .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
 //
+//                String string = StandardCharsets.UTF_8.decode(mappedByteBuffer).toString();
+//                List<String> ints = Arrays.asList(string.split(","));
 //
-//                IntStream intStream = IntStream.generate(mappedByteBuffer::getInt).limit(20); //mappedByteBuffer.remaining()
-////                StringBuilder builder = new StringBuilder();
-////                intStream.forEach(ch -> builder.append((char) ch));
-////                String string = builder.toString();
-////                List<String> ints = Arrays.asList(string.split(","));
-//
-//                intStream.forEach(System.out::print);
-////                intStream.forEach(ch -> System.out.print((char) ch));
-//                System.out.println();
-//
-////                boolean isNumberFound = intStream.parallel().anyMatch(n -> n == requestNumber);
-////                if (isNumberFound) {
-////                    return true;
-////                }
+//                boolean isNumberFound = ints.parallelStream().anyMatch(n -> n.equals(String.valueOf(requestNumber)));
+//                if (isNumberFound) {
+//                    return true;
+//                }
 //
 //            }
 //
@@ -144,6 +132,7 @@ public class Test {
 //        }
 //
 //        return false;
+//    }
 //---------------------------------------------------------------------------------------------------
 //        long length = file.length();
 //        long chunk = length / COUNT_CHUNKS;
@@ -217,45 +206,4 @@ public class Test {
 //        }
 //        return false;
     }
-
-    private int getNextIntFromMBF(MappedByteBuffer mbf, char delimiter) throws NumberFormatException {
-        StringBuilder builder = new StringBuilder();
-        while (mbf.hasRemaining()) {
-            char ch = (char) mbf.get();
-            if (ch == delimiter) {
-                break;
-            }
-            builder.append(ch);
-        }
-        return Integer.parseInt(builder.toString());
-    }
-
-    private long getNextDelimiterPosition(File file, long position, char delimiter) throws IOException {
-        long nextDelimiterPosition = 0;
-
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, position, 12);
-            while (mappedByteBuffer.hasRemaining()) {
-                char ch = (char) mappedByteBuffer.get();
-                if (ch == delimiter) {
-                    nextDelimiterPosition = mappedByteBuffer.position();
-                    break;
-                }
-            }
-        }
-        return nextDelimiterPosition;
-    }
-
-    private int getNumbersCountFromMBF(MappedByteBuffer mbf, char delimiter) {
-        int count = 0;
-        while (mbf.hasRemaining()) {
-            char ch = (char) mbf.get();
-            if (ch == delimiter) {
-                count++;
-            }
-        }
-        return count + 1;
-    }
-
-
 }

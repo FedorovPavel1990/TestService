@@ -1,11 +1,14 @@
 package utils;
 
-import java.io.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Random;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 
 /**
@@ -68,7 +71,12 @@ public class TestFilesGenerator {
         }
     }
 
-    public static String getFolder() {
-        return FOLDER;
-    }
+//    private static void fillFileV2(File file) throws IOException {
+//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+//            Stream.generate(() -> String.valueOf(new Random().nextInt()))
+//                    .limit(100_000_000)
+//                    .collect(Collectors.joining(","))
+//        }
+//    }
+
 }

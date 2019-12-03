@@ -4,22 +4,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
-@Service("ChunksParallelStream")
-public class NumberFinderWithChunksParallelStream implements NumberFinder {
+@Service("ChunksParallelStreamV2")
+public class NumberFinderWithChunksParallelStreamV2 implements NumberFinder {
 
     @Value("${testservice.count_chunks}")
     private int countChunks;
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws IOException {
+        boolean result = false;
+
         long length = file.length();
         long chunk = length / countChunks;
         long chunkPosition = 0;
@@ -30,24 +31,25 @@ public class NumberFinderWithChunksParallelStream implements NumberFinder {
                     ? length - chunkPosition
                     : chunk + NumberFinderUtil.getNextDelimiterPosition(file, chunkPosition + chunk, ',');
 
-            try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                MappedByteBuffer mappedByteBuffer = fileInputStream
+            try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
+
+                MappedByteBuffer mappedByteBuffer = randomAccessFile
                         .getChannel()
                         .map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
 
-                String string = StandardCharsets.UTF_8.decode(mappedByteBuffer).toString();
-                List<String> ints = Arrays.asList(string.split(","));
+                result = Stream.generate(() -> NumberFinderUtil.getNextIntFromMBFSync(mappedByteBuffer, ','))
+                        .takeWhile(Objects::nonNull)
+                        .parallel()
+                        .anyMatch(n -> requestNumber == n);
 
-                boolean isNumberFound = ints.parallelStream().anyMatch(n -> n.equals(String.valueOf(requestNumber)));
-                if (isNumberFound) {
-                    return true;
+                if (result) {
+                    break;
                 }
-
             }
 
             chunkPosition += chunk;
         }
 
-        return false;
+        return result;
     }
 }

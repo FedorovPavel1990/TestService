@@ -20,6 +20,21 @@ public class NumberFinderUtil {
         return Integer.parseInt(builder.toString());
     }
 
+    public static synchronized Integer getNextIntFromMBFSync(MappedByteBuffer mbf, char delimiter) {
+        if (!mbf.hasRemaining()) {
+            return null;
+        }
+//        StringBuilder builder = new StringBuilder();
+//        while (mbf.hasRemaining()) {
+//            char ch = (char) mbf.get();
+//            if (ch == delimiter) {
+//                break;
+//            }
+//            builder.append(ch);
+//        }
+        return getNextIntFromMBF(mbf, delimiter);
+    }
+
     public static long getNextDelimiterPosition(File file, long position, char delimiter) throws IOException {
         long nextDelimiterPosition = 0;
 

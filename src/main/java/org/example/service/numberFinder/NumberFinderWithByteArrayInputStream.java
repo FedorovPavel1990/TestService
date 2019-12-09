@@ -11,8 +11,6 @@ import java.nio.file.Paths;
 @Service("ByteArrayInputStream")
 public class NumberFinderWithByteArrayInputStream implements NumberFinder {
 
-
-
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws IOException {
         byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));

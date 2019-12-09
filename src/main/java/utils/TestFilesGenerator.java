@@ -71,12 +71,4 @@ public class TestFilesGenerator {
         }
     }
 
-//    private static void fillFileV2(File file) throws IOException {
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-//            Stream.generate(() -> String.valueOf(new Random().nextInt()))
-//                    .limit(100_000_000)
-//                    .collect(Collectors.joining(","))
-//        }
-//    }
-
 }

@@ -69,6 +69,10 @@ public class TestServiceLogic {
         }
     }
 
+    public void setFolder(String folder) {
+        this.folder = folder;
+    }
+
     private FindNumberResponse getResponse(Result result) {
         FindNumberResponse response = new FindNumberResponse();
         response.setResult(result);

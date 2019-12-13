@@ -3,7 +3,7 @@ package org.example;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.enums.ResultCodes;
-import org.example.service.TestServiceLogic;
+import org.example.service.logic.TestServiceLogic;
 import org.example.service.numberFinder.NumberFinderWithByteArrayInputStream;
 import org.example.service.numberFinder.NumberFinderWithChunksOfMappedByteBuffer;
 import org.example.testservice.FindNumberRequest;

@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.example.service.logic.TestServiceLogic;
 import org.example.service.numberFinder.NumberFinder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

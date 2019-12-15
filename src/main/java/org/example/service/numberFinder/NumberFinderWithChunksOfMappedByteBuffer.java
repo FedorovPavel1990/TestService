@@ -12,7 +12,7 @@ import java.nio.channels.FileChannel;
 @Service("ChunksOfMappedByteBuffer")
 public class NumberFinderWithChunksOfMappedByteBuffer implements NumberFinder {
 
-    @Value("${testservice.count_chunks}")
+    @Value("${testservice.chunks_count}")
     private int countChunks;
 
     @Override

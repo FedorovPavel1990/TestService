@@ -15,7 +15,7 @@ import java.util.List;
 @Service("ChunksParallelStream")
 public class NumberFinderWithChunksParallelStream implements NumberFinder {
 
-    @Value("${testservice.count_chunks}")
+    @Value("${testservice.chunks_count}")
     private int countChunks;
 
     @Override

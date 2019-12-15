@@ -1,9 +1,8 @@
-package org.example.service.logic;
+package org.example.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.enums.ResultCodes;
-import org.example.service.AsyncService;
 import org.example.testservice.FindNumberRequest;
 import org.example.testservice.FindNumberResponse;
 import org.example.testservice.Result;
@@ -20,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @Service
-public class TestServiceLogic implements TestServiceLogicWrapper {
+public class TestServiceLogic {
     private static final Logger LOG = LogManager.getLogger(TestServiceLogic.class);
 
     @Autowired

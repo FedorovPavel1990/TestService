@@ -118,14 +118,14 @@ public class TestServiceUnitTests {
         assertTest_NotFound(new NumberFinderWithScanner());
     }
 
-    private static void assertTest_OK(NumberFinder numberFinder) throws Exception {
+    private void assertTest_OK(NumberFinder numberFinder) throws Exception {
         File file = new File(TEMP_FILEPATH);
         boolean actual = numberFinder.findNumberInFile(file, 100001);
         Assert.assertTrue(numberFinder.getClass().getSimpleName() + "OK - FAILED", actual);
         LOG.info(numberFinder.getClass().getSimpleName() + "OK - OK");
     }
 
-    private static void assertTest_NotFound(NumberFinder numberFinder) throws Exception {
+    private void assertTest_NotFound(NumberFinder numberFinder) throws Exception {
         File file = new File(TEMP_FILEPATH);
         boolean actual = numberFinder.findNumberInFile(file, 100002);
         Assert.assertFalse(numberFinder.getClass().getSimpleName() + "_NotFound - FAILED", actual);

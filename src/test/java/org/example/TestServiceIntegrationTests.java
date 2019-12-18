@@ -66,7 +66,7 @@ public class TestServiceIntegrationTests {
 
 
     @Test
-    public void test_TestServiceLogic_OK() {
+    public void TestServiceLogic_OK() {
         logic.setFolder(TEST_FOLDER.getAbsolutePath());
         FindNumberRequest request = new FindNumberRequest();
         request.setN(100005);
@@ -78,6 +78,21 @@ public class TestServiceIntegrationTests {
 
         Assert.assertEquals(result.getCode(), expectedCode);
         Assert.assertThat(result.getFileNames(), is(expectedFileNamesList));
+    }
+
+    @Test
+    public void TestServiceLogic_NotFound() {
+        logic.setFolder(TEST_FOLDER.getAbsolutePath());
+        FindNumberRequest request = new FindNumberRequest();
+        request.setN(100006);
+        FindNumberResponse response = logic.findNumber(request);
+        Result result = response.getResult();
+
+        String expectedCode = ResultCodes.FindNumber_01.getCode();
+        String expectedError = ResultCodes.FindNumber_01.getError();
+
+        Assert.assertEquals(result.getCode(), expectedCode);
+        Assert.assertEquals(result.getError(), expectedError);
     }
 //----------------------------------------------------------------------------------
 //    @Autowired

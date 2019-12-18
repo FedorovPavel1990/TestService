@@ -2,7 +2,9 @@ package org.example.service.numberFinder;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -35,20 +37,33 @@ public class NumberFinderUtil {
         return getNextIntFromMBF(mbf, delimiter);
     }
 
-    public static long getNextDelimiterPosition(File file, long position, char delimiter) throws IOException {
+    public static long getNextDelimiterPosition(File file, long position, char delimiter) throws Exception {
         long nextDelimiterPosition = 0;
 
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, position, 12);
-            while (mappedByteBuffer.hasRemaining()) {
-                char ch = (char) mappedByteBuffer.get();
-                if (ch == delimiter) {
-                    nextDelimiterPosition = mappedByteBuffer.position();
-                    break;
+            try {
+                while (mappedByteBuffer.hasRemaining()) {
+                    char ch = (char) mappedByteBuffer.get();
+                    if (ch == delimiter) {
+                        nextDelimiterPosition = mappedByteBuffer.position();
+                        break;
+                    }
                 }
+            } finally {
+                closeMappedByteBuffer(mappedByteBuffer);
             }
         }
         return nextDelimiterPosition;
+    }
+
+    public static void closeMappedByteBuffer(MappedByteBuffer buffer) throws Exception {
+        Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+        Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        Object unsafe = unsafeField.get(null);
+        Method invokeCleaner = unsafeClass.getMethod("invokeCleaner", ByteBuffer.class);
+        invokeCleaner.invoke(unsafe, buffer);
     }
 
 }

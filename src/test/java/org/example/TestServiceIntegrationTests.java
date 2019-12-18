@@ -76,8 +76,9 @@ public class TestServiceIntegrationTests {
         String expectedCode = ResultCodes.FindNumber_00.getCode();
         List<String> expectedFileNamesList = Collections.singletonList("testFile5");
 
-        Assert.assertEquals(result.getCode(), expectedCode);
-        Assert.assertThat(result.getFileNames(), is(expectedFileNamesList));
+        Assert.assertEquals("TestServiceLogic_OK - FAILED", result.getCode(), expectedCode);
+        Assert.assertThat("TestServiceLogic_OK - FAILED", result.getFileNames(), is(expectedFileNamesList));
+        LOG.info("TestServiceLogic_OK - OK");
     }
 
     @Test
@@ -91,8 +92,9 @@ public class TestServiceIntegrationTests {
         String expectedCode = ResultCodes.FindNumber_01.getCode();
         String expectedError = ResultCodes.FindNumber_01.getError();
 
-        Assert.assertEquals(result.getCode(), expectedCode);
-        Assert.assertEquals(result.getError(), expectedError);
+        Assert.assertEquals("TestServiceLogic_NotFound - FAILED", result.getCode(), expectedCode);
+        Assert.assertEquals("TestServiceLogic_NotFound - FAILED", result.getError(), expectedError);
+        LOG.info("TestServiceLogic_NotFound - OK");
     }
 //----------------------------------------------------------------------------------
 //    @Autowired

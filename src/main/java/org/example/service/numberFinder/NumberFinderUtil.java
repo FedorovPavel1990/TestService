@@ -1,7 +1,7 @@
 package org.example.service.numberFinder;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -26,22 +26,14 @@ public class NumberFinderUtil {
         if (!mbf.hasRemaining()) {
             return null;
         }
-//        StringBuilder builder = new StringBuilder();
-//        while (mbf.hasRemaining()) {
-//            char ch = (char) mbf.get();
-//            if (ch == delimiter) {
-//                break;
-//            }
-//            builder.append(ch);
-//        }
         return getNextIntFromMBF(mbf, delimiter);
     }
 
     public static long getNextDelimiterPosition(File file, long position, char delimiter) throws Exception {
         long nextDelimiterPosition = 0;
 
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            MappedByteBuffer mappedByteBuffer = fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, position, 12);
+        try (FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel()) {
+            MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, 12);
             try {
                 while (mappedByteBuffer.hasRemaining()) {
                     char ch = (char) mappedByteBuffer.get();

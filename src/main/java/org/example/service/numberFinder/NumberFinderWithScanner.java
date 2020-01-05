@@ -1,5 +1,7 @@
 package org.example.service.numberFinder;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -10,11 +12,11 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 
 @Service("Scanner")
-public class NumberFinderWithScanner implements NumberFinder {
+public class NumberFinderWithScanner extends NumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws IOException {
-        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
+        byte[] byteArray = fileWrapper.readAllBytes(file);
         try (Scanner scanner = new Scanner(new ByteArrayInputStream(byteArray, 0, byteArray.length))) {
             scanner.useDelimiter(",");
             while (scanner.hasNextInt()) {
@@ -25,4 +27,5 @@ public class NumberFinderWithScanner implements NumberFinder {
         }
         return false;
     }
+
 }

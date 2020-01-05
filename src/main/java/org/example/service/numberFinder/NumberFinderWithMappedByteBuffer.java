@@ -8,16 +8,16 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 @Service("MappedByteBuffer")
-public class NumberFinderWithMappedByteBuffer implements NumberFinder {
+public class NumberFinderWithMappedByteBuffer extends NumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {
-        long length = file.length();
+        long length = fileWrapper.length(file);
         try (FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel()) {
             MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, length);
             try {
-                while (mappedByteBuffer.hasRemaining()) {
-                    if (requestNumber == NumberFinderUtil.getNextIntFromMBF(mappedByteBuffer, ',')) {
+                while (fileWrapper.hasRemaining(mappedByteBuffer)) {
+                    if (requestNumber == NumberFinderUtil.getNextIntFromMBF(fileWrapper, mappedByteBuffer, ',')) {
                         return true;
                     }
                 }

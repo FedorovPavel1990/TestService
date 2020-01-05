@@ -5,15 +5,13 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @Service("ByteArrayInputStream")
-public class NumberFinderWithByteArrayInputStream implements NumberFinder {
+public class NumberFinderWithByteArrayInputStream extends NumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws IOException {
-        byte[] byteArray = Files.readAllBytes(Paths.get(file.getPath()));
+        byte[] byteArray = fileWrapper.readAllBytes(file);
         try (ByteArrayInputStream fileReader = new ByteArrayInputStream(byteArray, 0, byteArray.length)) {
 
             int i = 0;
@@ -36,4 +34,5 @@ public class NumberFinderWithByteArrayInputStream implements NumberFinder {
         }
         return false;
     }
+
 }

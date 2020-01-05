@@ -1,6 +1,5 @@
 package org.example.service.numberFinder;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -11,10 +10,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 @Service("ChunksParallelStreamV2")
-public class NumberFinderWithChunksParallelStreamV2 implements NumberFinder {
-
-    @Value("${testservice.chunks_count}")
-    private int countChunks;
+public class NumberFinderWithChunksParallelStreamV2 extends NumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {
@@ -33,7 +29,7 @@ public class NumberFinderWithChunksParallelStreamV2 implements NumberFinder {
             try (FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel()) {
                 MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
                 try {
-                    result = Stream.generate(() -> NumberFinderUtil.getNextIntFromMBFSync(mappedByteBuffer, ','))
+                    result = Stream.generate(() -> NumberFinderUtil.getNextIntFromMBFSync(fileWrapper, mappedByteBuffer, ','))
                             .takeWhile(Objects::nonNull)
                             .parallel()
                             .anyMatch(n -> requestNumber == n);
@@ -52,7 +48,4 @@ public class NumberFinderWithChunksParallelStreamV2 implements NumberFinder {
         return result;
     }
 
-    public void setCountChunks(int countChunks) {
-        this.countChunks = countChunks;
-    }
 }

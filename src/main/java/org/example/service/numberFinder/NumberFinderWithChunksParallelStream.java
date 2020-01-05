@@ -1,6 +1,5 @@
 package org.example.service.numberFinder;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -12,10 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service("ChunksParallelStream")
-public class NumberFinderWithChunksParallelStream implements NumberFinder {
-
-    @Value("${testservice.chunks_count}")
-    private int countChunks;
+public class NumberFinderWithChunksParallelStream extends NumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {
@@ -50,7 +46,4 @@ public class NumberFinderWithChunksParallelStream implements NumberFinder {
         return false;
     }
 
-    public void setCountChunks(int countChunks) {
-        this.countChunks = countChunks;
-    }
 }

@@ -3,6 +3,7 @@ package org.example;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.enums.ResultCodes;
+import org.example.service.TestServiceEndpoint;
 import org.example.service.TestServiceLogic;
 import org.example.testservice.FindNumberRequest;
 import org.example.testservice.FindNumberResponse;
@@ -32,6 +33,9 @@ public class TestServiceIntegrationTests {
 //----------------------------------------------------------------------------------
     @Autowired
     private TestServiceLogic logic;
+
+    @Autowired
+    private TestServiceEndpoint endpoint;
 
     private static File TEST_FOLDER;
 
@@ -64,38 +68,69 @@ public class TestServiceIntegrationTests {
         }
     }
 
-
     @Test
-    public void TestServiceLogic_OK() {
+    public void TestServiceEndpoint_OK() {
         logic.setFolder(TEST_FOLDER.getAbsolutePath());
         FindNumberRequest request = new FindNumberRequest();
         request.setN(100005);
-        FindNumberResponse response = logic.findNumber(request);
+        FindNumberResponse response = endpoint.findNumber(request);
         Result result = response.getResult();
 
         String expectedCode = ResultCodes.FindNumber_00.getCode();
         List<String> expectedFileNamesList = Collections.singletonList("testFile5");
 
-        Assert.assertEquals("TestServiceLogic_OK - FAILED", result.getCode(), expectedCode);
-        Assert.assertThat("TestServiceLogic_OK - FAILED", result.getFileNames(), is(expectedFileNamesList));
-        LOG.info("TestServiceLogic_OK - OK");
+        Assert.assertEquals("TestServiceEndpoint_OK - FAILED", result.getCode(), expectedCode);
+        Assert.assertThat("TestServiceEndpoint_OK - FAILED", result.getFileNames(), is(expectedFileNamesList));
+        LOG.info("TestServiceEndpoint_OK - OK");
     }
 
     @Test
-    public void TestServiceLogic_NotFound() {
+    public void TestServiceEndpoint_NotFound() {
         logic.setFolder(TEST_FOLDER.getAbsolutePath());
         FindNumberRequest request = new FindNumberRequest();
         request.setN(100006);
-        FindNumberResponse response = logic.findNumber(request);
+        FindNumberResponse response = endpoint.findNumber(request);
         Result result = response.getResult();
 
         String expectedCode = ResultCodes.FindNumber_01.getCode();
         String expectedError = ResultCodes.FindNumber_01.getError();
 
-        Assert.assertEquals("TestServiceLogic_NotFound - FAILED", result.getCode(), expectedCode);
-        Assert.assertEquals("TestServiceLogic_NotFound - FAILED", result.getError(), expectedError);
-        LOG.info("TestServiceLogic_NotFound - OK");
+        Assert.assertEquals("TestServiceEndpoint_NotFound - FAILED", result.getCode(), expectedCode);
+        Assert.assertEquals("TestServiceEndpoint_NotFound - FAILED", result.getError(), expectedError);
+        LOG.info("TestServiceEndpoint_NotFound - OK");
     }
+
+//    @Test
+//    public void TestServiceLogic_OK() {
+//        logic.setFolder(TEST_FOLDER.getAbsolutePath());
+//        FindNumberRequest request = new FindNumberRequest();
+//        request.setN(100005);
+//        FindNumberResponse response = logic.findNumber(request);
+//        Result result = response.getResult();
+//
+//        String expectedCode = ResultCodes.FindNumber_00.getCode();
+//        List<String> expectedFileNamesList = Collections.singletonList("testFile5");
+//
+//        Assert.assertEquals("TestServiceLogic_OK - FAILED", result.getCode(), expectedCode);
+//        Assert.assertThat("TestServiceLogic_OK - FAILED", result.getFileNames(), is(expectedFileNamesList));
+//        LOG.info("TestServiceLogic_OK - OK");
+//    }
+//
+//    @Test
+//    public void TestServiceLogic_NotFound() {
+//        logic.setFolder(TEST_FOLDER.getAbsolutePath());
+//        FindNumberRequest request = new FindNumberRequest();
+//        request.setN(100006);
+//        FindNumberResponse response = logic.findNumber(request);
+//        Result result = response.getResult();
+//
+//        String expectedCode = ResultCodes.FindNumber_01.getCode();
+//        String expectedError = ResultCodes.FindNumber_01.getError();
+//
+//        Assert.assertEquals("TestServiceLogic_NotFound - FAILED", result.getCode(), expectedCode);
+//        Assert.assertEquals("TestServiceLogic_NotFound - FAILED", result.getError(), expectedError);
+//        LOG.info("TestServiceLogic_NotFound - OK");
+//    }
 //----------------------------------------------------------------------------------
 //    @Autowired
 //    private AsyncService asyncService;

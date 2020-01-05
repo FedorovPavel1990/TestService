@@ -1,6 +1,5 @@
 package org.example.service.numberFinder;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -9,14 +8,11 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 @Service("ChunksOfMappedByteBuffer")
-public class NumberFinderWithChunksOfMappedByteBuffer implements NumberFinder {
-
-    @Value("${testservice.chunks_count}")
-    private int countChunks;
+public class NumberFinderWithChunksOfMappedByteBuffer extends NumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {
-        long length = file.length();
+        long length = fileWrapper.length(file);
         long chunk = length / countChunks;
         long chunkPosition = 0;
 
@@ -30,7 +26,7 @@ public class NumberFinderWithChunksOfMappedByteBuffer implements NumberFinder {
                 MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
                 try {
                     while (mappedByteBuffer.hasRemaining()) {
-                        if (requestNumber == NumberFinderUtil.getNextIntFromMBF(mappedByteBuffer, ',')) {
+                        if (requestNumber == NumberFinderUtil.getNextIntFromMBF(fileWrapper, mappedByteBuffer, ',')) {
                             return true;
                         }
                     }
@@ -45,7 +41,4 @@ public class NumberFinderWithChunksOfMappedByteBuffer implements NumberFinder {
         return false;
     }
 
-    public void setCountChunks(int countChunks) {
-        this.countChunks = countChunks;
-    }
 }

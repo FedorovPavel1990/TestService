@@ -10,10 +10,10 @@ import java.nio.channels.FileChannel;
 
 public class NumberFinderUtil {
 
-    public static int getNextIntFromMBF(MappedByteBuffer mbf, char delimiter) {
+    public static int getNextIntFromMBF(AbstractFileWrapper fileWrapper, MappedByteBuffer mbf, char delimiter) {
         StringBuilder builder = new StringBuilder();
-        while (mbf.hasRemaining()) {
-            char ch = (char) mbf.get();
+        while (fileWrapper.hasRemaining(mbf)) {
+            char ch = (char) fileWrapper.get(mbf);
             if (ch == delimiter) {
                 break;
             }
@@ -22,11 +22,11 @@ public class NumberFinderUtil {
         return Integer.parseInt(builder.toString());
     }
 
-    public static synchronized Integer getNextIntFromMBFSync(MappedByteBuffer mbf, char delimiter) {
+    public static synchronized Integer getNextIntFromMBFSync(AbstractFileWrapper fileWrapper, MappedByteBuffer mbf, char delimiter) {
         if (!mbf.hasRemaining()) {
             return null;
         }
-        return getNextIntFromMBF(mbf, delimiter);
+        return getNextIntFromMBF(fileWrapper, mbf, delimiter);
     }
 
     public static long getNextDelimiterPosition(File file, long position, char delimiter) throws Exception {

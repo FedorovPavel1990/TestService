@@ -59,7 +59,7 @@ public class TestServiceIntegrationTests {
         MockitoAnnotations.initMocks(this);
         Mockito.doNothing().when(databaseService);
 
-        numberFinder = asyncService.getNumbeпшекrFinder();
+        numberFinder = asyncService.getNumberFinder();
         numberFinder.setFileWrapper(fileWrapper);
     }
 

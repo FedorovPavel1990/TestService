@@ -5,8 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.example.service.TestServiceLogic;
 import org.example.service.numberFinder.*;
 import org.junit.Assert;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +12,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Random;
+import java.util.Objects;
 
 @SpringBootTest
 public class TestServiceUnitTests {
@@ -34,25 +33,8 @@ public class TestServiceUnitTests {
     @Qualifier("MockFileWrapper")
     AbstractFileWrapper fileWrapper;
 
-    private static String TEMP_FILEPATH;
-
-    @BeforeAll
-    static void createTempFile() throws IOException {
-        File file = Files.createTempFile("tmpTestFile", ".tmp").toFile();
-        file.deleteOnExit();
-        TEMP_FILEPATH = file.getAbsolutePath();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            for (int i = 0; i < 100; i++) {
-                writer.write((new Random().nextInt(99999) - i * 1000) + ",");
-            }
-            writer.write(String.valueOf(100001));
-        }
-    }
-
-    @AfterAll
-    static void deleteTempFile() throws IOException {
-        Files.delete(Path.of(TEMP_FILEPATH));
-    }
+    @Value("${testservice.folder}")
+    private String folder;
 
     @Test
     public void NumberFinderWithByteArrayInputStream_OK() throws Exception {
@@ -128,15 +110,17 @@ public class TestServiceUnitTests {
 
     private void assertTest_OK(NumberFinder numberFinder) throws Exception {
         numberFinder.setFileWrapper(fileWrapper);
-        File file = new File(TEMP_FILEPATH);
+        File folder = new File(this.folder);
+        File file = Objects.requireNonNull(folder.listFiles())[0];
         boolean actual = numberFinder.findNumberInFile(file, 516854);
-        Assert.assertTrue(numberFinder.getClass().getSimpleName() + "OK - FAILED", actual);
-        LOG.info(numberFinder.getClass().getSimpleName() + "OK - OK");
+        Assert.assertTrue(numberFinder.getClass().getSimpleName() + "_OK - FAILED", actual);
+        LOG.info(numberFinder.getClass().getSimpleName() + "_OK - OK");
     }
 
     private void assertTest_NotFound(NumberFinder numberFinder) throws Exception {
         numberFinder.setFileWrapper(fileWrapper);
-        File file = new File(TEMP_FILEPATH);
+        File folder = new File(this.folder);
+        File file = Objects.requireNonNull(folder.listFiles())[0];
         boolean actual = numberFinder.findNumberInFile(file, 123);
         Assert.assertFalse(numberFinder.getClass().getSimpleName() + "_NotFound - FAILED", actual);
         LOG.info(numberFinder.getClass().getSimpleName() + "_NotFound - OK");

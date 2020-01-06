@@ -19,7 +19,7 @@ public class AsyncService {
     private static final Logger LOG = LogManager.getLogger(TestServiceLogic.class);
 
     @Autowired
-    @Qualifier("ChunksOfMappedByteBuffer")
+    @Qualifier("ByteArrayInputStream")
     private NumberFinder numberFinder;
 
     @Async
@@ -35,6 +35,10 @@ public class AsyncService {
         }
         LOG.debug("TASK FOR {} ENDED", file.getName());
         return new AsyncResult<>(true);
+    }
+
+    public NumberFinder getNumberFinder() {
+        return this.numberFinder;
     }
 
 }

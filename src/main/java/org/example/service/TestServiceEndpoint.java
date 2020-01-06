@@ -35,7 +35,7 @@ public class TestServiceEndpoint {
                 response.getResult().getFileNames(),
                 response.getResult().getError());
 
-//        databaseService.addResultInDB(request, response);
+        databaseService.addResultInDB(request, response);
         return response;
 
     }

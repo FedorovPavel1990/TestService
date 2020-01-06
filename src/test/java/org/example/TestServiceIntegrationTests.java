@@ -3,148 +3,102 @@ package org.example;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.enums.ResultCodes;
+import org.example.service.AsyncService;
+import org.example.service.DatabaseService;
 import org.example.service.TestServiceEndpoint;
 import org.example.service.TestServiceLogic;
+import org.example.service.numberFinder.AbstractFileWrapper;
+import org.example.service.numberFinder.NumberFinder;
 import org.example.testservice.FindNumberRequest;
 import org.example.testservice.FindNumberResponse;
 import org.example.testservice.Result;
 import org.junit.Assert;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import static org.hamcrest.Matchers.is;
 
 @SpringBootTest
 public class TestServiceIntegrationTests {
     private static final Logger LOG = LogManager.getLogger(TestServiceLogic.class);
-//----------------------------------------------------------------------------------
-    @Autowired
-    private TestServiceLogic logic;
 
     @Autowired
+    @InjectMocks
     private TestServiceEndpoint endpoint;
 
-    private static File TEST_FOLDER;
+    @Mock
+    private DatabaseService databaseService;
 
-    @BeforeAll
-    static void createTempFolder() throws IOException {
-        TEST_FOLDER = Files.createTempDirectory("tmpTestFiles").toFile();
-        TEST_FOLDER.deleteOnExit();
+    @Autowired
+    @Qualifier("MockFileWrapper")
+    private AbstractFileWrapper fileWrapper;
 
-        for (int i = 0; i < 5; i++) {
-            File file = Files.createFile(Paths.get(TEST_FOLDER.getAbsolutePath() + "/testFile" + (i + 1))).toFile();
-            file.deleteOnExit();
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                for (int j = 0; j < 100; j++) {
-                    writer.write((new Random().nextInt(99999) - j * 1000) + ",");
-                }
-                writer.write(String.valueOf(100001 + i));
-            }
-        }
-    }
+    @Value("${testservice.folder}")
+    private String folder;
 
-    @AfterAll
-    static void deleteTempFolder() throws IOException {
-        if (TEST_FOLDER != null) {
-            File[] filesInTempFolder = TEST_FOLDER.listFiles();
-            assert filesInTempFolder != null;
-            for (File file : filesInTempFolder) {
-                Files.delete(file.toPath());
-            }
-            Files.delete(TEST_FOLDER.toPath());
-        }
+    @Autowired
+    private AsyncService asyncService;
+
+    private NumberFinder numberFinder;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.initMocks(this);
+        Mockito.doNothing().when(databaseService);
+
+        numberFinder = asyncService.getNumbeпшекrFinder();
+        numberFinder.setFileWrapper(fileWrapper);
     }
 
     @Test
     public void TestServiceEndpoint_OK() {
-        logic.setFolder(TEST_FOLDER.getAbsolutePath());
         FindNumberRequest request = new FindNumberRequest();
-        request.setN(100005);
+        request.setN(516854);
         FindNumberResponse response = endpoint.findNumber(request);
         Result result = response.getResult();
+        File folder = new File(this.folder);
+        File[] fileList = folder.listFiles();
+        List<String> fileNameList = new ArrayList<>();
+        assert fileList != null;
+        for (File file : fileList) {
+            fileNameList.add(file.getName());
+        }
+
+        Collections.sort(result.getFileNames());
+        Collections.sort(fileNameList);
 
         String expectedCode = ResultCodes.FindNumber_00.getCode();
-        List<String> expectedFileNamesList = Collections.singletonList("testFile5");
 
-        Assert.assertEquals("TestServiceEndpoint_OK - FAILED", result.getCode(), expectedCode);
-        Assert.assertThat("TestServiceEndpoint_OK - FAILED", result.getFileNames(), is(expectedFileNamesList));
+        Assert.assertEquals("TestServiceEndpoint_OK - FAILED", expectedCode, result.getCode());
+        Assert.assertThat("TestServiceEndpoint_OK - FAILED", result.getFileNames(), is(fileNameList));
         LOG.info("TestServiceEndpoint_OK - OK");
     }
 
     @Test
     public void TestServiceEndpoint_NotFound() {
-        logic.setFolder(TEST_FOLDER.getAbsolutePath());
         FindNumberRequest request = new FindNumberRequest();
-        request.setN(100006);
+        request.setN(123);
         FindNumberResponse response = endpoint.findNumber(request);
         Result result = response.getResult();
 
         String expectedCode = ResultCodes.FindNumber_01.getCode();
         String expectedError = ResultCodes.FindNumber_01.getError();
 
-        Assert.assertEquals("TestServiceEndpoint_NotFound - FAILED", result.getCode(), expectedCode);
-        Assert.assertEquals("TestServiceEndpoint_NotFound - FAILED", result.getError(), expectedError);
+        Assert.assertEquals("TestServiceEndpoint_NotFound - FAILED", expectedCode, result.getCode());
+        Assert.assertEquals("TestServiceEndpoint_NotFound - FAILED", expectedError, result.getError());
         LOG.info("TestServiceEndpoint_NotFound - OK");
     }
-
-//    @Test
-//    public void TestServiceLogic_OK() {
-//        logic.setFolder(TEST_FOLDER.getAbsolutePath());
-//        FindNumberRequest request = new FindNumberRequest();
-//        request.setN(100005);
-//        FindNumberResponse response = logic.findNumber(request);
-//        Result result = response.getResult();
-//
-//        String expectedCode = ResultCodes.FindNumber_00.getCode();
-//        List<String> expectedFileNamesList = Collections.singletonList("testFile5");
-//
-//        Assert.assertEquals("TestServiceLogic_OK - FAILED", result.getCode(), expectedCode);
-//        Assert.assertThat("TestServiceLogic_OK - FAILED", result.getFileNames(), is(expectedFileNamesList));
-//        LOG.info("TestServiceLogic_OK - OK");
-//    }
-//
-//    @Test
-//    public void TestServiceLogic_NotFound() {
-//        logic.setFolder(TEST_FOLDER.getAbsolutePath());
-//        FindNumberRequest request = new FindNumberRequest();
-//        request.setN(100006);
-//        FindNumberResponse response = logic.findNumber(request);
-//        Result result = response.getResult();
-//
-//        String expectedCode = ResultCodes.FindNumber_01.getCode();
-//        String expectedError = ResultCodes.FindNumber_01.getError();
-//
-//        Assert.assertEquals("TestServiceLogic_NotFound - FAILED", result.getCode(), expectedCode);
-//        Assert.assertEquals("TestServiceLogic_NotFound - FAILED", result.getError(), expectedError);
-//        LOG.info("TestServiceLogic_NotFound - OK");
-//    }
-//----------------------------------------------------------------------------------
-//    @Autowired
-//    private AsyncService asyncService;
-//
-//    @Test
-//    public void test_TestAsyncService() throws Exception {
-//        String str = "123,1231,23,124,124,12,41,24,12,4,12,41,24,124";
-//
-//
-//
-//
-//        NumberFinder numberFinder = mock(NumberFinder.class);
-//        when(numberFinder.findNumberInFile(new File("Test"), 1)).thenReturn(true);
-//        boolean actual = asyncService.asyncFindNumberInFile(new File("Test"),1, new ArrayList<>()).get();
-//        Assert.assertTrue("AsyncService - FAILED", actual);
-//    }
 }

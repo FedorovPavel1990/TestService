@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 @Service("ByteArrayInputStream")
-public class NumberFinderWithByteArrayInputStream extends NumberFinder {
+public class NumberFinderWithByteArrayInputStream extends AbstractNumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws IOException {

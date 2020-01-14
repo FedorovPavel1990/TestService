@@ -8,7 +8,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 @Service("MappedByteBuffer")
-public class NumberFinderWithMappedByteBuffer extends NumberFinder {
+public class NumberFinderWithMappedByteBuffer extends AbstractNumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {

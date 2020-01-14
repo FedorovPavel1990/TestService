@@ -8,24 +8,24 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 @Service("ChunksOfMappedByteBuffer")
-public class NumberFinderWithChunksOfMappedByteBuffer extends NumberFinder {
+public class NumberFinderWithChunksOfMappedByteBuffer extends AbstractNumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {
         long length = fileWrapper.length(file);
-        long chunk = length / countChunks;
+        long chunkSize = length / countChunks;
         long chunkPosition = 0;
 
         for (int i = 0; i < countChunks; i++) {
 
-            chunk = chunkPosition + chunk >= length
+            chunkSize = chunkPosition + chunkSize >= length
                     ? length - chunkPosition
-                    : chunk + NumberFinderUtil.getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+                    : chunkSize + NumberFinderUtil.getNextDelimiterPosition(fileWrapper, file, chunkPosition + chunkSize, ',');
 
             try (FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel()) {
-                MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
+                MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunkSize);
                 try {
-                    while (mappedByteBuffer.hasRemaining()) {
+                    while (fileWrapper.hasRemaining(mappedByteBuffer)) {
                         if (requestNumber == NumberFinderUtil.getNextIntFromMBF(fileWrapper, mappedByteBuffer, ',')) {
                             return true;
                         }
@@ -35,7 +35,7 @@ public class NumberFinderWithChunksOfMappedByteBuffer extends NumberFinder {
                 }
             }
 
-            chunkPosition += chunk;
+            chunkPosition += chunkSize;
         }
 
         return false;

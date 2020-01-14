@@ -1,18 +1,14 @@
 package org.example.service.numberFinder;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Scanner;
 
 @Service("Scanner")
-public class NumberFinderWithScanner extends NumberFinder {
+public class NumberFinderWithScanner extends AbstractNumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws IOException {

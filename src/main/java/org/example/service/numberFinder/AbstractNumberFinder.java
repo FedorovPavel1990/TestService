@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 
 @Service
-public abstract class NumberFinder {
+public abstract class AbstractNumberFinder {
 
     @Autowired
     @Qualifier("RealFileWrapper")

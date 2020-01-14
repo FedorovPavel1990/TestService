@@ -29,16 +29,16 @@ public class NumberFinderUtil {
         return getNextIntFromMBF(fileWrapper, mbf, delimiter);
     }
 
-    public static long getNextDelimiterPosition(File file, long position, char delimiter) throws Exception {
+    public static long getNextDelimiterPosition(AbstractFileWrapper fileWrapper, File file, long position, char delimiter) throws Exception {
         long nextDelimiterPosition = 0;
 
         try (FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel()) {
             MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, 12);
             try {
-                while (mappedByteBuffer.hasRemaining()) {
-                    char ch = (char) mappedByteBuffer.get();
+                while (fileWrapper.hasRemaining(mappedByteBuffer)) {
+                    char ch = (char) fileWrapper.get(mappedByteBuffer);
                     if (ch == delimiter) {
-                        nextDelimiterPosition = mappedByteBuffer.position();
+                        nextDelimiterPosition = fileWrapper.position(mappedByteBuffer);
                         break;
                     }
                 }
@@ -49,7 +49,7 @@ public class NumberFinderUtil {
         return nextDelimiterPosition;
     }
 
-    public static void closeMappedByteBuffer(MappedByteBuffer buffer) throws Exception {
+    public static void closeMappedByteBuffer(ByteBuffer buffer) throws Exception {
         Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
         Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
         unsafeField.setAccessible(true);

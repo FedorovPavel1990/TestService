@@ -2,7 +2,7 @@ package org.example.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.example.service.numberFinder.NumberFinder;
+import org.example.service.numberFinder.AbstractNumberFinder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
@@ -19,8 +19,8 @@ public class AsyncService {
     private static final Logger LOG = LogManager.getLogger(TestServiceLogic.class);
 
     @Autowired
-    @Qualifier("ByteArrayInputStream")
-    private NumberFinder numberFinder;
+    @Qualifier("ChunksOfMappedByteBuffer")
+    private AbstractNumberFinder numberFinder;
 
     @Async
     public Future<Boolean> asyncFindNumberInFile(File file, int requestNumber, List<String> resultFileList) {
@@ -37,7 +37,7 @@ public class AsyncService {
         return new AsyncResult<>(true);
     }
 
-    public NumberFinder getNumberFinder() {
+    public AbstractNumberFinder getNumberFinder() {
         return this.numberFinder;
     }
 

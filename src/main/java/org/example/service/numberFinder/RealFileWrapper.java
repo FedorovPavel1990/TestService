@@ -30,4 +30,9 @@ public class RealFileWrapper extends AbstractFileWrapper {
     public byte get(ByteBuffer bf) {
         return bf.get();
     }
+
+    @Override
+    public long position(ByteBuffer bf) {
+        return bf.position();
+    }
 }

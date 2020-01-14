@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service("ChunksParallelStream")
-public class NumberFinderWithChunksParallelStream extends NumberFinder {
+public class NumberFinderWithChunksParallelStream extends AbstractNumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {
@@ -23,7 +23,7 @@ public class NumberFinderWithChunksParallelStream extends NumberFinder {
 
             chunk = chunkPosition + chunk >= length
                     ? length - chunkPosition
-                    : chunk + NumberFinderUtil.getNextDelimiterPosition(file, chunkPosition + chunk, ',');
+                    : chunk + NumberFinderUtil.getNextDelimiterPosition(fileWrapper, file, chunkPosition + chunk, ',');
 
             try (FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel()) {
                 MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);

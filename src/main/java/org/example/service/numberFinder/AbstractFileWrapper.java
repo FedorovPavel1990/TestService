@@ -14,4 +14,6 @@ public abstract class AbstractFileWrapper {
 
     public abstract byte get(ByteBuffer bf);
 
+    public abstract long position(ByteBuffer bf);
+
 }

@@ -16,7 +16,7 @@ public class NumberFinderWithChunksParallelStreamV2 extends AbstractNumberFinder
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {
         boolean result = false;
 
-        long length = file.length();
+        long length = fileWrapper.length(file);
         long chunk = length / countChunks;
         long chunkPosition = 0;
 
@@ -29,7 +29,8 @@ public class NumberFinderWithChunksParallelStreamV2 extends AbstractNumberFinder
             try (FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel()) {
                 MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
                 try {
-                    result = Stream.generate(() -> NumberFinderUtil.getNextIntFromMBFSync(fileWrapper, mappedByteBuffer, ','))
+                    Stream<Integer> stream = fileWrapper.getStream(mappedByteBuffer);
+                    result = stream
                             .takeWhile(Objects::nonNull)
                             .parallel()
                             .anyMatch(n -> requestNumber == n);

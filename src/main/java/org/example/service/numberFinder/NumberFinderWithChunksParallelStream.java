@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,7 +14,7 @@ public class NumberFinderWithChunksParallelStream extends AbstractNumberFinder {
 
     @Override
     public boolean findNumberInFile(File file, int requestNumber) throws Exception {
-        long length = file.length();
+        long length = fileWrapper.length(file);
         long chunk = length / countChunks;
         long chunkPosition = 0;
 
@@ -28,7 +27,7 @@ public class NumberFinderWithChunksParallelStream extends AbstractNumberFinder {
             try (FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel()) {
                 MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, chunkPosition, chunk);
                 try {
-                    String string = StandardCharsets.UTF_8.decode(mappedByteBuffer).toString();
+                    String string = fileWrapper.getStringFromMappedByteBuffer(mappedByteBuffer);
                     List<String> ints = Arrays.asList(string.split(","));
 
                     boolean isNumberFound = ints.parallelStream().anyMatch(n -> n.equals(String.valueOf(requestNumber)));

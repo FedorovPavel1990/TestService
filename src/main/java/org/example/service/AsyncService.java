@@ -27,7 +27,9 @@ public class AsyncService {
         LOG.debug("TASK FOR {} STARTED WITH {}", file.getName(), numberFinder.getClass().getSimpleName());
         try {
             if (numberFinder.findNumberInFile(file, requestNumber)) {
-                resultFileList.add(file.getName());
+                synchronized (this) {
+                    resultFileList.add(file.getName());
+                }
             }
         } catch (Exception e) {
             LOG.error("Сбой при чтении файла {}", file.getName(), e);

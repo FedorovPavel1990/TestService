@@ -23,7 +23,7 @@ public class NumberFinderUtil {
     }
 
     public static synchronized Integer getNextIntFromMBFSync(AbstractFileWrapper fileWrapper, MappedByteBuffer mbf, char delimiter) {
-        if (!mbf.hasRemaining()) {
+        if (!fileWrapper.hasRemaining(mbf)) {
             return null;
         }
         return getNextIntFromMBF(fileWrapper, mbf, delimiter);

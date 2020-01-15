@@ -27,8 +27,4 @@ public abstract class AbstractNumberFinder {
         this.fileWrapper = fileWrapper;
     }
 
-    public AbstractFileWrapper getFileWrapper() {
-        return this.fileWrapper;
-    }
-
 }

@@ -29,16 +29,6 @@ public class TestServiceUnitTests {
     private String folder;
 
     @Test
-    public void NumberFinderWithByteArrayInputStream_OK() throws Exception {
-        assertTest_OK(new NumberFinderWithByteArrayInputStream());
-    }
-
-    @Test
-    public void NumberFinderWithByteArrayInputStream_NotFound() throws Exception {
-        assertTest_NotFound(new NumberFinderWithByteArrayInputStream());
-    }
-
-    @Test
     public void NumberFinderWithChunksOfMappedByteBuffer_OK() throws Exception {
         NumberFinderWithChunksOfMappedByteBuffer numberFinder = new NumberFinderWithChunksOfMappedByteBuffer();
         numberFinder.setCountChunks(countChunks);

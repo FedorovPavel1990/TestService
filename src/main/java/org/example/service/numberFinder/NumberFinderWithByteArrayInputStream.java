@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 @Service("ByteArrayInputStream")
 public class NumberFinderWithByteArrayInputStream extends AbstractNumberFinder {
@@ -29,6 +30,11 @@ public class NumberFinderWithByteArrayInputStream extends AbstractNumberFinder {
 
                 if (requestNumber == number) {
                     return true;
+                }
+
+                int otherNumber = new Random().nextInt(999);
+                if (otherNumber >= 500) {
+                    break;
                 }
             }
         }

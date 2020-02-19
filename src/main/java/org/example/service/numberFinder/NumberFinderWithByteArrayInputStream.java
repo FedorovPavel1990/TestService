@@ -32,9 +32,11 @@ public class NumberFinderWithByteArrayInputStream extends AbstractNumberFinder {
                     return true;
                 }
 
-                int otherNumber = new Random().nextInt(999);
-                if (otherNumber >= 500) {
-                    break;
+                int randomNumber = new Random().nextInt(999);
+                if (randomNumber >= 500) {
+                    System.out.println("randomNumber is greater or equals than 500");
+                } else {
+                    System.out.println("randomNumber is less than 500");
                 }
             }
         }

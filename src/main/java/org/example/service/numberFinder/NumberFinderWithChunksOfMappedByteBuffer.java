@@ -27,6 +27,7 @@ public class NumberFinderWithChunksOfMappedByteBuffer extends AbstractNumberFind
                 try {
                     while (fileWrapper.hasRemaining(mappedByteBuffer)) {
                         if (requestNumber == NumberFinderUtil.getNextIntFromMBF(fileWrapper, mappedByteBuffer, ',')) {
+                            System.out.println("Что-то найдено!");
                             return true;
                         }
                     }
@@ -38,6 +39,7 @@ public class NumberFinderWithChunksOfMappedByteBuffer extends AbstractNumberFind
             chunkPosition += chunkSize;
         }
 
+        System.out.println("Ничего не найдено!");
         return false;
     }
 

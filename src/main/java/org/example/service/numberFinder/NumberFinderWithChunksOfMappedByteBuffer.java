@@ -1,3 +1,4 @@
+
 package org.example.service.numberFinder;
 
 import org.springframework.stereotype.Service;

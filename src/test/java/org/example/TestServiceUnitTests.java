@@ -29,18 +29,28 @@ public class TestServiceUnitTests {
     private String folder;
 
     @Test
-    public void NumberFinderWithChunksOfMappedByteBuffer_OK() throws Exception {
-        NumberFinderWithChunksOfMappedByteBuffer numberFinder = new NumberFinderWithChunksOfMappedByteBuffer();
-        numberFinder.setCountChunks(countChunks);
-        assertTest_OK(numberFinder);
+    public void NumberFinderWithByteArrayInputStream_OK() throws Exception {
+        assertTest_OK(new NumberFinderWithByteArrayInputStream());
     }
 
     @Test
-    public void NumberFinderWithChunksOfMappedByteBuffer_NotFound() throws Exception {
-        NumberFinderWithChunksOfMappedByteBuffer numberFinder = new NumberFinderWithChunksOfMappedByteBuffer();
-        numberFinder.setCountChunks(countChunks);
-        assertTest_NotFound(numberFinder);
+    public void NumberFinderWithByteArrayInputStream_NotFound() throws Exception {
+        assertTest_NotFound(new NumberFinderWithByteArrayInputStream());
     }
+
+//    @Test
+//    public void NumberFinderWithChunksOfMappedByteBuffer_OK() throws Exception {
+//        NumberFinderWithChunksOfMappedByteBuffer numberFinder = new NumberFinderWithChunksOfMappedByteBuffer();
+//        numberFinder.setCountChunks(countChunks);
+//        assertTest_OK(numberFinder);
+//    }
+//
+//    @Test
+//    public void NumberFinderWithChunksOfMappedByteBuffer_NotFound() throws Exception {
+//        NumberFinderWithChunksOfMappedByteBuffer numberFinder = new NumberFinderWithChunksOfMappedByteBuffer();
+//        numberFinder.setCountChunks(countChunks);
+//        assertTest_NotFound(numberFinder);
+//    }
 
     @Test
     public void NumberFinderWithChunksParallelStream_OK() throws Exception {

@@ -31,11 +31,6 @@ public class NumberFinderWithByteArrayInputStream extends AbstractNumberFinder {
                 if (requestNumber == number) {
                     return true;
                 }
-
-                int otherNumber = new Random().nextInt(999);
-                if (otherNumber >= 500) {
-                    break;
-                }
             }
         }
         return false;
